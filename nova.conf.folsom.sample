@@ -1,0 +1,50 @@
+[DEFAULT]
+
+# LOG/STATE
+logdir=/var/log/nova
+state_path=/var/lib/nova
+lock_path=/var/lock/nova
+rootwrap_config=/etc/nova/rootwrap.conf
+api_paste_config=/etc/nova/api-paste.ini
+enabled_apis=ec2,osapi_compute,metadata
+
+# AUTHENTICATION
+auth_strategy=keystone
+use_deprecated_auth=false
+
+# DB
+sql_connection=mysql://nova:pdclab!@#@localhost/nova
+
+# COMPUTE
+libvirt_use_virtio_for_bridges=True
+compute_driver=xenapi.XenAPIDriver
+xenapi_connection_url=
+xenapi_connection_username=
+xenapi_connection_password=
+
+# VOLUMES/CINDER
+#iscsi_helper=tgtadm
+#volumes_path=/var/lib/nova/volumes
+#volumes_api_class=nova.volume.cinder.API
+
+
+# GLANCE
+glance_api_servers=localhost
+image_service=nova.image.glance.GlanceImageService
+
+# RABBITMQ
+rabbit_host=
+rabbit_admin=
+rabbit_password=
+
+
+# NETWORKING/QUANTUM
+dhcpbridge_flagfile=/etc/nova/nova.conf
+dhcpbridge=/usr/bin/nova-dhcpbridge
+force_dhcp_release=True
+ec2_private_dns_show_ip=True
+
+
+# MISC
+verbose=True
+debug=True
