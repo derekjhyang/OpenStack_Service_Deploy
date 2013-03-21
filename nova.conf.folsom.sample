@@ -13,7 +13,7 @@ auth_strategy=keystone
 use_deprecated_auth=false
 
 # DB
-sql_connection=mysql://nova:pdclab!@#@localhost/nova
+sql_connection=mysql://accout:password@#@localhost/nova
 
 # COMPUTE
 libvirt_use_virtio_for_bridges=True
