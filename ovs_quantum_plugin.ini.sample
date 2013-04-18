@@ -1,0 +1,24 @@
+#-----------------------------------------------------------------------------
+# Sample Configurations.
+#-----------------------------------------------------------------------------
+#
+# 1. Without tunneling.
+# [DATABASE]
+# sql_connection = mysql://root:nova@127.0.0.1:3306/ovs_quantum
+# [OVS]
+# enable-tunneling = False
+# integration-bridge = br-int
+# [AGENT]
+# root_helper = sudo
+#
+# 2. With tunneling.
+# [DATABASE]
+# sql_connection = mysql://root:nova@127.0.0.1:3306/ovs_quantum
+# [OVS]
+# enable-tunneling = True
+# integration-bridge = br-int
+# tunnel-bridge = br-tun
+# remote-ip-file = /opt/stack/remote-ips.txt
+# local-ip = 10.0.0.3
+# [AGENT]
+# root_helper = sudo
