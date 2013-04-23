@@ -1,50 +1,61 @@
 [DEFAULT]
 
-# LOG/STATE
-logdir=/var/log/nova
-state_path=/var/lib/nova
-lock_path=/var/lock/nova
-rootwrap_config=/etc/nova/rootwrap.conf
-api_paste_config=/etc/nova/api-paste.ini
-enabled_apis=ec2,osapi_compute,metadata
+# Log/State
+logdir = /var/log/nova
+state_path = /var/lib/nova
 
-# AUTHENTICATION
-auth_strategy=keystone
-use_deprecated_auth=false
+# Keystone
+auth_strategy = keystone
+use_deprecated_auth = false
 
-# DB
-sql_connection=mysql://accout:password@localhost/nova
+# Database
+sql_connection = mysql://<account>:<password>@<SQL-host>/nova
 
-# COMPUTE
-libvirt_use_virtio_for_bridges=True
-compute_driver=xenapi.XenAPIDriver
-xenapi_connection_url=
-xenapi_connection_username=
-xenapi_connection_password=
+# Nova
+libvirt_use_virtio_for_bridges = true
+compute_driver = xenapi.XenAPIDriver
+xenapi_connection_url = <XenPoolMasterIPAddress>
+xenapi_connection_username = 
+xenapi_connection_password = 
 
-# VOLUMES/CINDER
-#iscsi_helper=tgtadm
-#volumes_path=/var/lib/nova/volumes
-#volumes_api_class=nova.volume.cinder.API
+# novnc
+novnc_enable = true
+novncproxy_base_url = http://<Compute-Controller-Host-Public-IP-Address>:6080/vnc_auto.html
+vncserver_proxyclient_address =
+vncserver_listen = 0.0.0.0
 
+# Glance
+glance_api_servers = <Glance-Service-Host>:9292
+image_service = nova.image.glance.GlanceImageService
 
-# GLANCE
-glance_api_servers=localhost
-image_service=nova.image.glance.GlanceImageService
+# Cinder
+volume_api_class = nova.volume.cinder.API
+#volume_driver = nova.volume.driver.ISCSIDriver
+#iscsi_helper = tgtadm
 
-# RABBITMQ
-rabbit_host=
-rabbit_admin=
-rabbit_password=
+# RabbitMQ
+rabbit_host = <RabbitMQ-Server>
+rabbit_admin = 
+rabbit_password =
 
-
-# NETWORKING/QUANTUM
-dhcpbridge_flagfile=/etc/nova/nova.conf
-dhcpbridge=/usr/bin/nova-dhcpbridge
-force_dhcp_release=True
-ec2_private_dns_show_ip=True
-
+# Networking
+dhcpbridge_flagfile = /etc/nova/nova.conf
+dhcpbridge = /usr/bin/nova-dhcpbridge
+force_dhcp_release = true
+ec2_private_dns_show_ip = true
+network_api_class = nova.network.quantumv2.api.API
+quantum_url = http://<Quantum-Server>:9696
+quantum_auth_strategy = keystone
+quantum_admin_tenant_name = service
+quantum_admin_username = quantum
+quantum_admin_password = <quantum-password>
+quantum_admin_auth_url = http://<Quantum-Server>:35357/v2.0
+firewall_driver = nova.virt.libvirt.firewall.IptablesFirewallDriver
 
 # MISC
-verbose=True
-debug=True
+verbose = true
+debug = true
+lock_path = /var/lock/nova
+rootwrap_config = /etc/nova/rootwrap.conf
+api_paste_config = /etc/nova/api-paste.ini
+enabled_apis = ec2,osapi_compute,metadata
