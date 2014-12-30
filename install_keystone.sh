@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# author: Winnie Yang
+# author: Derrick Yang
 
 # enable trace
 set -x 
@@ -7,16 +7,24 @@ set -x
 DATABASE_HOST=localhost
 DATABASE_USER=root
 DATABASE_PASSWORD=root
-KEYSTONE_USER=keystone
-KEYSTONE_PW=keystone
-KEYSTONE_CONFIG_PATH=/etc/keystone/keystone.conf
+DATABASE=keystone
 
+SERVICE_USER=keystone
+SERVICE_PASSWORD=keystone
+SERVICE_CONFIG_PATH=/etc/${SERVICE_USER}/${SERVICE_USER}.conf
+
+# ===============
+# Create database
+# ===============
 mysql -h ${DATABASE_HOST} -u ${DATABASE_USER} -p${DATABASE_PASSWORD} \
-      -e "DROP DATABASE IF EXISTS keystone;"\
-"CREATE DATABASE keystone;"\
-"GRANT ALL PRIVILEGES ON keystone.* TO '${KEYSTONE_USER}'@'localhost' IDENTIFIED BY '${KEYSTONE_PW}';"\
-"GRANT ALL PRIVILEGES ON keystone.* TO '${KEYSTONE_USER}'@'%' IDENTIFIED BY '${KEYSTONE_PW}';"
+      -e "DROP DATABASE IF EXISTS ${DATABASE};"\
+"CREATE DATABASE ${DATABASE};"\
+"GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${SERVICE_USER}'@'localhost' IDENTIFIED BY '${SERVICE_PASSWORD}';"\
+"GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${SERVICE_USER}'@'%' IDENTIFIED BY '${SERVICE_PASSWORD}';"
 
+# ================
+# Install Packages
+# ================
 apt-get install -y keystone python-keystoneclient
 
 
@@ -25,19 +33,19 @@ apt-get install -y keystone python-keystoneclient
 # ======================
 # generate admin token
 ADMIN_TOKEN=$(openssl rand -hex $((${RANDOM}/100)))
-if [ -f ${KEYSTONE_CONFIG_PATH} ];then
-    sed -i -r "s|^(#? *)(admin_token)( *= *)(.*)|admin_token = ${ADMIN_TOKEN}|g" ${KEYSTONE_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${KEYSTONE_USER}:${KEYSTONE_PW}@${DATABASE_HOST}/keystone|g" ${KEYSTONE_CONFIG_PATH}
+if [ -f ${SERVICE_CONFIG_PATH} ];then
+    sed -i -r "s|^(#? *)(admin_token)( *= *)(.*)|admin_token = ${ADMIN_TOKEN}|g" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${SERVICE_CONFIG_PATH}
 
     # update UUID Provider and driver
     PROVIDER=keystone.token.providers.uuid.Provider
     DRIVER=keystone.token.persistence.backend.sql.Token
-    sed -i -r "s/^(#? *)(provider)( *= *)(.*)/provider = ${PROVIDER}/g" ${KEYSTONE_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(driver)( *= *)(.*)/driver = ${DRIVER}/g" ${KEYSTONE_CONFIG_PATH}
-
+    sed -i -r "s/^(#? *)(provider)( *= *)(.*)/provider = ${PROVIDER}/g" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s/^(#? *)(driver)( *= *)(.*)/driver = ${DRIVER}/g" ${SERVICE_CONFIG_PATH}
+        
 fi
 
-
+    
 # sync the 'keystone' database
 keystone-manage db_sync
 
