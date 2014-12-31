@@ -54,11 +54,7 @@ if [ -f ${SERVICE_CONFIG_PATH} ];then
     DRIVER=keystone.token.persistence.backend.sql.Token
     sed -i -r "s|^(#? *)(provider)( *= *)(.*)|provider = ${PROVIDER}|g" ${SERVICE_CONFIG_PATH}
     sed -i -r "s|^(#? *)(driver)( *= *)(.*)|driver = ${DRIVER}|g" ${SERVICE_CONFIG_PATH}
-
-
-        
 fi
-
 
 # sync the 'keystone' database
 keystone-manage db_sync
@@ -66,7 +62,23 @@ keystone-manage db_sync
 # restart keystone
 service keystone restart
 
-sleep 5
+sleep 10
+
+export OS_SERVICE_TOKEN=${ADMIN_TOKEN}
+export OS_SERVICE_ENDPOINT=${ENDPOINT_ADMIN_URL}
+
+# Create the admin tenant
+keystone --debug tenant-create --name ${ADMIN_TENANT} --description "Admin Tenant"
+# Create the admin user
+keystone user-create --name ${ADMIN_USER}  --pass ${ADMIN_PASSWORD}
+# Create the admin role
+keystone role-create --name admin
+# Add the admin role to the admin tenant and user
+keystone user-role-add --user ${ADMIN_USER} --tenant ${ADMIN_TENANT} --role admin
+
+# Create Tenant
+keystone tenant-create --name service --description "Service Tenant"
+
 
 # Create the service entity for the identity service:
 keystone service-create --name ${SERVICE_USER} --type identity \
