@@ -68,13 +68,13 @@ if [ -f ${GLANCE_API_CONFIG_PATH} ];then
     # edit database access
     sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${GLANCE_API_CONFIG_PATH}
     # edit the [keystone_authtoken] section
-    sed -i -r "s/^(#? *)(auth_uri)( *= *)(.*)/http://${CONTROLLER_IP}:5000/v2.0/g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(identity_uri)( *= *)(.*)/http://${CONTROLLER_IP}:35357/g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_tenant_name)( *= *)(.*)/${SERVICE_TENANT}/g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_user)( *= *)(.*)/${SERVICE_USER}/g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_password)( *= *)(.*)/${SERVICE_PASSWORD}/g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}|g" ${GLANCE_API_CONFIG_PATH}
     # edit [paste_deploy] section 
-    sed -i -r "s/^(#? *)(flavor)( *= *)(.*)/flavor = keystone/g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone|g" ${GLANCE_API_CONFIG_PATH}
 fi
 
 
@@ -85,14 +85,15 @@ if [ -f ${GLANCE_REGISTRY_CONFIG_PATH} ];then
     # edit database access
     sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
     # edit the [keystone_authtoken] section
-    sed -i -r "s/^(#? *)(auth_uri)( *= *)(.*)/http://${CONTROLLER_IP}:5000/v2.0/g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(identity_uri)( *= *)(.*)/http://${CONTROLLER_IP}:35357/g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_tenant_name)( *= *)(.*)/${SERVICE_TENANT}/g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_user)( *= *)(.*)/${SERVICE_USER}/g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(admin_password)( *= *)(.*)/${SERVICE_PASSWORD}/g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
     # edit [paste_deploy] section 
-    sed -i -r "s/^(#? *)(flavor)( *= *)(.*)/flavor = keystone/g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone|g" ${GLANCE_REGISTRY_CONFIG_PATH}
 fi
+
 
 # =================
 # Sync the database
