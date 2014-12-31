@@ -52,8 +52,9 @@ if [ -f ${SERVICE_CONFIG_PATH} ];then
     # update UUID Provider and driver
     PROVIDER=keystone.token.providers.uuid.Provider
     DRIVER=keystone.token.persistence.backend.sql.Token
-    sed -i -r "s/^(#? *)(provider)( *= *)(.*)/provider = ${PROVIDER}/g" ${SERVICE_CONFIG_PATH}
-    sed -i -r "s/^(#? *)(driver)( *= *)(.*)/driver = ${DRIVER}/g" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(provider)( *= *)(.*)|provider = ${PROVIDER}|g" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(driver)( *= *)(.*)|driver = ${DRIVER}|g" ${SERVICE_CONFIG_PATH}
+
 
         
 fi
