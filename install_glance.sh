@@ -48,7 +48,7 @@ keystone user-create --name ${SERVICE_USER} --pass ${SERVICE_PASSWORD}
 keystone user-role-add --user ${SERVICE_USER} --tenant ${SERVICE_TENANT} --role ${SERVICE_ROLE}
 # c. Create the glance service.
 keystone service-create --name ${SERVICE_USER} --type image --description "OpenStack Image Service"
-# d. Create the identity service endpoints.
+# d. Create the service API endpoints.
 keystone endpoint-create \
 --service-id $(keystone service-list | awk '/images/{print $2}') \
 --publicurl ${ENDPOINT_PUBLIC_URL} \
