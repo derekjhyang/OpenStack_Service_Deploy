@@ -23,6 +23,10 @@ ENDPOINT_INTERNAL_URL=http://${CONTROLLER_IP}:${SERVICE_INTERNAL_PORT}/${API_VER
 ENDPOINT_ADMIN_URL=http://${CONTROLLER_IP}:${SERVICE_ADMIN_PORT}/${API_VERSION}
 ENDPOINT_REGION=RegionOne
 
+ADMIN_TENANT=admin
+ADMIN_USER=admin
+ADMIN_PASSWORD=admin
+
 
 # ===============
 # Create database
@@ -46,14 +50,9 @@ cp ${SERVICE_CONFIG_PATH} ${SERVICE_CONFIG_PATH}.sample
 # generate admin token
 ADMIN_TOKEN=$(openssl rand -hex $((${RANDOM}/100)))
 if [ -f ${SERVICE_CONFIG_PATH} ];then
-    sed -i -r "s|^(#? *)(admin_token)( *= *)(.*)|admin_token = ${ADMIN_TOKEN}|g" ${SERVICE_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_token)( *= *)(.*)|admin_token=${ADMIN_TOKEN}" ${SERVICE_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection=mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}" ${SERVICE_CONFIG_PATH}
 
-    # update UUID Provider and driver
-    PROVIDER=keystone.token.providers.uuid.Provider
-    DRIVER=keystone.token.persistence.backend.sql.Token
-    sed -i -r "s|^(#? *)(provider)( *= *)(.*)|provider = ${PROVIDER}|g" ${SERVICE_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(driver)( *= *)(.*)|driver = ${DRIVER}|g" ${SERVICE_CONFIG_PATH}
 fi
 
 # sync the 'keystone' database
@@ -62,13 +61,13 @@ keystone-manage db_sync
 # restart keystone
 service keystone restart
 
-sleep 10
+sleep 5
 
 export OS_SERVICE_TOKEN=${ADMIN_TOKEN}
 export OS_SERVICE_ENDPOINT=${ENDPOINT_ADMIN_URL}
 
 # Create the admin tenant
-keystone --debug tenant-create --name ${ADMIN_TENANT} --description "Admin Tenant"
+keystone tenant-create --name ${ADMIN_TENANT} --description "Admin Tenant"
 # Create the admin user
 keystone user-create --name ${ADMIN_USER}  --pass ${ADMIN_PASSWORD}
 # Create the admin role

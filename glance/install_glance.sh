@@ -40,17 +40,25 @@ mysql -h ${DATABASE_HOST} -u ${DATABASE_USER} -p${DATABASE_PASSWORD} \
 # =========================
 # export amdmin credentials
 # =========================
-source admin-openrc.sh
+source ~/admin-openrc.sh
 
 # a. Create the glance user.
+USER_ID=$(keystone user-list | awk '/'${SERVICE_USER}'/{print $2}')
+if [ ! -z ${USER_ID} ];then
+    keystone user-delete ${USER_ID}
+fi
 keystone user-create --name ${SERVICE_USER} --pass ${SERVICE_PASSWORD}
 # b. Link the glance user to the service tenant and admin role.
 keystone user-role-add --user ${SERVICE_USER} --tenant ${SERVICE_TENANT} --role ${SERVICE_ROLE}
 # c. Create the glance service.
+SERVICE_ID=$(keystone service-list | awk '/image/{print $2}')
+if [ ! -z ${SERVICE_ID} ];then
+    keystone service-delete ${SERVICE_ID}
+fi
 keystone service-create --name ${SERVICE_USER} --type image --description "OpenStack Image Service"
 # d. Create the service API endpoints.
 keystone endpoint-create \
---service-id $(keystone service-list | awk '/images/{print $2}') \
+--service-id $(keystone service-list | awk '/image/{print $2}') \
 --publicurl ${ENDPOINT_PUBLIC_URL} \
 --internalurl ${ENDPOINT_INTERNAL_URL} \
 --adminurl ${ENDPOINT_ADMIN_URL} \
@@ -65,16 +73,17 @@ apt-get install -y glance python-glanceclient
 # Edit the /etc/glance/glance-api.conf
 # ====================================
 if [ -f ${GLANCE_API_CONFIG_PATH} ];then
+    cp ${GLANCE_API_CONFIG_PATH} ${GLANCE_API_CONFIG_PATH}.sample
     # edit database access
-    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}" ${GLANCE_API_CONFIG_PATH}
     # edit the [keystone_authtoken] section
-    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0|g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357|g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}|g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}|g" ${GLANCE_API_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}" ${GLANCE_API_CONFIG_PATH}
     # edit [paste_deploy] section 
-    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone|g" ${GLANCE_API_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone" ${GLANCE_API_CONFIG_PATH}
 fi
 
 
@@ -82,16 +91,21 @@ fi
 # Edit the /etc/glance/glance-registry.conf
 # =========================================
 if [ -f ${GLANCE_REGISTRY_CONFIG_PATH} ];then
+    cp ${GLANCE_REGISTRY_CONFIG_PATH} ${GLANCE_REGISTRY_CONFIG_PATH}.sample
     # edit database access
-    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(connection)( *= *)(.*)|connection = mysql://${SERVICE_USER}:${SERVICE_PASSWORD}@${DATABASE_HOST}/${DATABASE}" ${GLANCE_REGISTRY_CONFIG_PATH}
     # edit the [keystone_authtoken] section
-    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0|g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357|g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
-    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(auth_uri)( *= *)(.*)|auth_uri = http://${CONTROLLER_IP}:5000/v2.0" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(identity_uri)( *= *)(.*)|identity_uri = http://${CONTROLLER_IP}:35357" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_tenant_name)( *= *)(.*)|admin_tenant_name = ${SERVICE_TENANT}" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_user)( *= *)(.*)|admin_user = ${SERVICE_USER}" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(admin_password)( *= *)(.*)|admin_password = ${SERVICE_PASSWORD}" ${GLANCE_REGISTRY_CONFIG_PATH}
     # edit [paste_deploy] section 
-    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone|g" ${GLANCE_REGISTRY_CONFIG_PATH}
+    sed -i -r "s|^(#? *)(flavor)( *= *)(.*)|flavor = keystone" ${GLANCE_REGISTRY_CONFIG_PATH}
+    
+    sed -i -r "s|^(#? *)(verbose)( *= *)(.*)|verbose = True" ${GLANCE_REGISTRY_CONFIG_PATH}
+    
+    #sed -i -r "s|^(#? *)(debug)( *= *)(.*)|debug = True" ${GLANCE_REGISTRY_CONFIG_PATH}
 fi
 
 
@@ -108,3 +122,14 @@ service glance-registry restart
 service glance-api restart
 
 rm -f /var/lib/glance/glance.sqlite
+
+# =============
+# Check service
+# =============
+#RESULT=$(netstat -tnpl | grep ${SERVICE_PUBLIC_PORT})
+#if [ -z ${RESULT} ];then
+#   echo "[Error] glance service is not working successful."
+#   echo "${RESULT}"
+#   exit 1
+#fi
+exit 0
