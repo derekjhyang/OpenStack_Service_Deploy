@@ -11,6 +11,7 @@ DATABASE=cinder
 
 SERVICE_USER=cinder
 SERVICE_PASSWORD=cinder
+SERVICE_TENANT=service
 SERVICE_PUBLIC_PORT=8776
 SERVICE_INTERNAL_PORT=8776
 SERVICE_ADMIN_PORT=8776
@@ -39,24 +40,33 @@ mysql -h ${DATABASE_HOST} -u ${DATABASE_USER} -p${DATABASE_PASSWORD} \
 "GRANT ALL PRIVILEGES ON ${DATABASE}.* TO '${SERVICE_USER}'@'%' IDENTIFIED BY '${SERVICE_PASSWORD}';"
 
 
-source admin-openrc.sh
+source ~/admin-openrc.sh
 
 # a. Create the cinder user.
 keystone user-create --name ${SERVICE_USER} --pass ${SERVICE_PASSWORD}
 # b. Link the cinder user to the service tenant and admin role.
-keystone user-role-add --user ${SERVICE_USER} --tenant ${SERVICE_TENANT} --role ${SERVICE_ROLE}
+keystone user-role-add --user ${SERVICE_USER} --tenant ${SERVICE_TENANT} --role admin
 # c. Create the cinder service.
+VOLUME_SERVICE_ID=$(keystone service-list | awk '$6~/^volume$/{print $2}')
+if [ ! -z ${VOLUME_SERVICE_ID} ];then
+    keystone service-delete ${VOLUME_SERVICE_ID}
+fi
 keystone service-create --name ${SERVICE_USER} --type volume --description "OpenStack Block Storage"
+VOLUME_SERVICE_ID=$(keystone service-list | awk '$6~/^volumev2$/{print $2}')
+if [ ! -z ${VOLUME_SERVICE_ID} ];then
+    keystone service-delete ${VOLUME_SERVICE_ID}
+fi
 keystone service-create --name ${SERVICE_USER}v2 --type volumev2 --description "OpenStack Block Storage"
+
 # d. Create the service API endpoints.
 keystone endpoint-create \
---service-id $(keystone service-list | awk '/volume/{print $2}') \
+--service-id $(keystone service-list | awk '$6~/^volume$/{print $2}') \
 --publicurl ${CINDER_PUBLIC_URL_V1} \
 --internalurl ${CINDER_INTERNAL_URL_V1} \
 --adminurl ${CINDER_ADMIN_URL_V1} \
 --region ${ENDPOINT_REGION}
 keystone endpoint-create \
---service-id $(keystone service-list | awk '/volumev2/{print $2}') \
+--service-id $(keystone service-list | awk '$6~/^volumev2$/{print $2}') \
 --publicurl ${CINDER_PUBLIC_URL_V2} \
 --internalurl ${CINDER_INTERNAL_URL_V2} \
 --adminurl ${CINDER_ADMIN_URL_V2} \
